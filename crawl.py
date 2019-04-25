@@ -12,11 +12,12 @@ import aiohttp
 import requests
 import urllib3
 import tqdm
+import shutil
 
 URL = 'http://www.9dxs.com/3/3024/'
-DIR_PATH = 'download'
+DIR_PATH = '_tmp'
 CHAPTER_ENCODING = 'utf8'
-CONTENT_ENCODING = 'gbk'
+CONTENT_ENCODING = 'utf8'
 
 HEADERS = {
     "User-Agent": ("Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.3"
@@ -172,6 +173,7 @@ class AsnycSpider():
                         outfile.write(line)
                     outfile.write('\n\n')
                 logger.info('Write {} successful.'.format(real_file))
+            shutil.rmtree(self.downloaddir, ignore_errors=True)
 
     def parse_content(self, title, html):
         return ''
@@ -220,6 +222,6 @@ class NovelSpider(AsnycSpider):
 
 
 if __name__ == "__main__":
-    spider = NovelSpider('https://www.77nt.com/56235/', 'download8')
-    # spider.download(2500, 2520)
+    spider = NovelSpider('https://www.77nt.com/56235/')
+    spider.download(4100, 4102)
     spider.merge_file("target.txt")
