@@ -164,48 +164,23 @@ class AsnycSpider():
         filelist = os.listdir(target_list)
         filelist.sort()
         with open(filename, 'w', encoding='utf-8') as outfile:
-            for fname in filelist:
+            for fname in tqdm.tqdm(filelist, ascii=True):
                 real_file = os.path.abspath(
                     os.path.join(self.downloaddir, fname))
-                print('Open {} successful.'.format(real_file))
                 with open(real_file, 'r', encoding='utf-8') as infile:
                     for line in infile:
                         outfile.write(line)
                     outfile.write('\n\n')
+                logger.info('Write {} successful.'.format(real_file))
 
     def parse_content(self, title, html):
-        formated_html = ''
-        try:
-            soup = BeautifulSoup(html, 'lxml')
-            content = soup.find(id='content')
-            formated_html = (title + '<br><br>' +
-                             content.getText('&nbsp;&nbsp;&nbsp;&nbsp;'))
-        except Exception as e:
-            raise e
-        return formated_html
+        return ''
 
     def parse_chapter(self, html):
-        chapter_list = list()
-        try:
-            soup = BeautifulSoup(html, 'lxml')
-            chapter_div = soup.find(id='readerlist')
-            hrefs = chapter_div.find_all("li")
-            for i in hrefs:
-                item = dict()
-                if (i.select('a')):
-                    href = i.select('a')[0].attrs['href']
-                    item.update({
-                        'href': self.url + self.get_absolute_path(href),
-                        'text': i.select('a')[0].text
-                    })
-                    chapter_list.append(item)
-        except Exception as e:
-            raise e
-        return chapter_list
+        return ''
 
 
 class NovelSpider(AsnycSpider):
-
     def __init__(self, url, downloaddir=DIR_PATH):
         super().__init__(url, downloaddir=downloaddir)
 
@@ -226,29 +201,25 @@ class NovelSpider(AsnycSpider):
             soup = BeautifulSoup(html, 'lxml')
             chapter_div = soup.find(id='novel56235')
             hrefs = chapter_div.find_all('dd')
-            for i in hrefs:
-                item = dict()
-                if (i.find('a')):
-                    href = i.find('a').get('href')
-                    item.update({
-                        'href': self.url + self.get_absolute_path(href),
-                        'text': i.find('a').text
-                    })
-                    chapter_list.append(item)
+            chapter_list = [{
+                'href':
+                self.url + self.get_absolute_path(i.find('a').get('href')),
+                'text':
+                i.find('a').text
+            } for i in hrefs if i.find('a')]
         except Exception as e:
             raise e
         return chapter_list
 
     def custom_strip(self, x):
-        pass
         # remove_tag1 = re.compile(r'(<br />|<br>)+')
         # remove_tag2 = re.compile(r'(&nbsp;){4}')
         # x = re.sub(remove_tag1, '\n\n', x)
         # x = re.sub(remove_tag2, '\n\n', x)
-        # return x.strip()
+        return x.strip()
 
 
 if __name__ == "__main__":
     spider = NovelSpider('https://www.77nt.com/56235/', 'download8')
-    spider.download(2500, 2520)
-    # spider.merge_file("target.txt")
+    # spider.download(2500, 2520)
+    spider.merge_file("target.txt")
